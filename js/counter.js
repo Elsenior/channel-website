@@ -1,40 +1,31 @@
 /* =========================================================
-   عدّاد زيارات الموقع باستخدام GoatCounter
+   عدّاد زيارات الموقع
    ---------------------------------------------------------
-   1. أنشئ حساباً مجانياً على https://www.goatcounter.com
-   2. اكتب الكود الخاص بموقعك بالأسفل (مثلاً: "uniquecoderz"
-      إذا كان رابط لوحة التحكم https://uniquecoderz.goatcounter.com)
-   3. من لوحة التحكم: Settings ← فعّل خيار
-      "Allow adding visitor counts on your website"
+   - الرقم الظاهر في الموقع: Abacus (مجاني وبدون تسجيل)
+     يزيد 1 مع كل فتح أو تحديث لأي صفحة.
+   - الإحصائيات التفصيلية (الزوّار، الصفحات، الدول):
+     لوحة GoatCounter الخاصة بك على
+     https://hamzanabil.goatcounter.com
    ========================================================= */
 const GOATCOUNTER_CODE = "hamzanabil";
+const ABACUS_URL = "https://abacus.jasoncameron.dev/hit/uniquecoderz-dev/pageviews";
 
 (function () {
-  if (!GOATCOUNTER_CODE) return; // العدّاد مخفي حتى يتم ضبط الكود
+  // 1) تسجيل الزيارة في GoatCounter (للوحة التحكم فقط)
+  if (GOATCOUNTER_CODE) {
+    const s = document.createElement("script");
+    s.async = true;
+    s.src = "https://gc.zgo.at/count.js";
+    s.dataset.goatcounter = `https://${GOATCOUNTER_CODE}.goatcounter.com/count`;
+    document.head.appendChild(s);
+  }
 
-  const base = `https://${GOATCOUNTER_CODE}.goatcounter.com`;
-
-  // 1) تسجيل الزيارة الحالية
-  const s = document.createElement("script");
-  s.async = true;
-  s.src = "https://gc.zgo.at/count.js";
-  s.dataset.goatcounter = `${base}/count`;
-  document.head.appendChild(s);
-
-  // 2) جلب إجمالي الزيارات وعرضه
-  // GoatCounter يحسب "الزوّار" وليس عدد مرات التحديث (نفس الشخص = زيارة واحدة).
-  // إجمالي الموقع (TOTAL) يتحدّث ببطء، لذلك نقرأ أيضاً عدد زوّار الصفحة الرئيسية
-  // ونعرض الرقم الأكبر بينهما.
-  const read = (path) =>
-    fetch(`${base}/counter/${encodeURIComponent(path)}.json`)
-      .then((r) => (r.ok ? r.json() : { count: "0" }))
-      .then((d) => parseInt(String(d.count).replace(/\D/g, ""), 10) || 0)
-      .catch(() => 0);
-
-  Promise.all([read("TOTAL"), read("/")])
-    .then(([siteTotal, home]) => {
-      const total = Math.max(siteTotal, home);
-      if (!total) return; // لا نعرض العدّاد قبل تسجيل أول زيارة
+  // 2) زيادة العدّاد الظاهر +1 وعرض الرقم الجديد
+  fetch(ABACUS_URL)
+    .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+    .then((data) => {
+      const total = Number(data.value);
+      if (!Number.isFinite(total) || total <= 0) return;
 
       document.querySelectorAll("[data-visits-wrap]").forEach((el) => (el.hidden = false));
       document.querySelectorAll("[data-visits]").forEach((el) => countUp(el, total));
