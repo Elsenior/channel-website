@@ -7,7 +7,7 @@
    3. من لوحة التحكم: Settings ← فعّل خيار
       "Allow adding visitor counts on your website"
    ========================================================= */
-const GOATCOUNTER_CODE = ""; // ← اكتب الكود هنا
+const GOATCOUNTER_CODE = "hamzanabil";
 
 (function () {
   if (!GOATCOUNTER_CODE) return; // العدّاد مخفي حتى يتم ضبط الكود
