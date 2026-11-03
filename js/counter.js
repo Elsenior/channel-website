@@ -22,13 +22,19 @@ const GOATCOUNTER_CODE = "hamzanabil";
   document.head.appendChild(s);
 
   // 2) جلب إجمالي الزيارات وعرضه
-  fetch(`${base}/counter/TOTAL.json`)
-    .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
-    .then((data) => {
-      // GoatCounter يرجع الرقم كنص مثل "12,345"
-      // نضيف 1 لاحتساب الزيارة الحالية (يسجّلها GoatCounter بعد ثوانٍ)
-      const total = parseInt(String(data.count).replace(/\D/g, ""), 10) + 1;
-      if (!Number.isFinite(total)) return;
+  // GoatCounter يحسب "الزوّار" وليس عدد مرات التحديث (نفس الشخص = زيارة واحدة).
+  // إجمالي الموقع (TOTAL) يتحدّث ببطء، لذلك نقرأ أيضاً عدد زوّار الصفحة الرئيسية
+  // ونعرض الرقم الأكبر بينهما.
+  const read = (path) =>
+    fetch(`${base}/counter/${encodeURIComponent(path)}.json`)
+      .then((r) => (r.ok ? r.json() : { count: "0" }))
+      .then((d) => parseInt(String(d.count).replace(/\D/g, ""), 10) || 0)
+      .catch(() => 0);
+
+  Promise.all([read("TOTAL"), read("/")])
+    .then(([siteTotal, home]) => {
+      const total = Math.max(siteTotal, home);
+      if (!total) return; // لا نعرض العدّاد قبل تسجيل أول زيارة
 
       document.querySelectorAll("[data-visits-wrap]").forEach((el) => (el.hidden = false));
       document.querySelectorAll("[data-visits]").forEach((el) => countUp(el, total));
