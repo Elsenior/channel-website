@@ -58,6 +58,7 @@
 
 /* ---------- 2. الأساسيات ---------- */
 *, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
 
 html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
 
