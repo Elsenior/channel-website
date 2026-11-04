@@ -1,0 +1,57 @@
+# ينشر الموقع على GitHub Pages بعد ضغط (minify) ملفات HTML و CSS و JS.
+# الملفات في المستودع تبقى مقروءة وسهلة التعديل، والنسخة المنشورة فقط هي المضغوطة.
+name: Minify & Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install minifiers
+        run: npm install -g --no-audit --no-fund html-minifier-terser@7.2.0 clean-css-cli@5.6.3 terser@5.31.0
+
+      - name: Build minified site into _site/
+        run: |
+          mkdir -p _site/css _site/js
+          cp -r images _site/
+          cp CNAME _site/ 2>/dev/null || true
+
+          html-minifier-terser --input-dir . --output-dir _site --file-ext html \
+            --collapse-whitespace --conservative-collapse --remove-comments \
+            --remove-redundant-attributes --remove-script-type-attributes \
+            --remove-style-link-type-attributes --minify-css true --minify-js true
+
+          cleancss -O1 -o _site/css/style.css css/style.css
+          terser js/counter.js --compress --mangle --comments false -o _site/js/counter.js
+
+          rm -rf _site/.github
+          echo "Build output:" && du -ah _site | sort -h | tail -20
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
