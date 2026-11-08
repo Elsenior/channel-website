@@ -33,6 +33,12 @@ jobs:
       - run: npm ci
       - run: npm run build
 
+      # While the repo's Pages source is "Deploy from a branch", GitHub also publishes the raw
+      # repo files on each push, and the last deployment wins. Waiting makes the built site win.
+      # Remove this step once Settings > Pages > Source is set to "GitHub Actions".
+      - name: Wait for GitHub's branch deployment to finish
+        run: sleep 90
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
