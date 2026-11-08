@@ -153,7 +153,7 @@ export default function MentorshipPage() {
             </p>
             <ul className="contact-info">
               <li>
-                📱 واتساب: <span dir="ltr">+2001017544243</span>
+                📱 واتساب: <span dir="ltr">+201017544243</span>
               </li>
               <li>
                 ✉️ الإيميل: <span dir="ltr">hamzanabil913@gmail.com</span>
